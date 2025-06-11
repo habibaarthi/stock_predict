@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Stock Predictor | Real-Time Market Forecasts</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+        }
+        .prediction-card {
+            transition: all 0.3s ease;
+        }
+        .prediction-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .stock-input {
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        .stock-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        .nav-link {
+            position: relative;
+        }
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: #3b82f6;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover:after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Navigation -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-chart-line text-2xl mr-2"></i>
+                    <span class="font-semibold text-xl">AI Stock Predictor</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#" class="nav-link py-2">Dashboard</a>
+                    <a href="#models" class="nav-link py-2">Models</a>
+                    <a href="#predictions" class="nav-link py-2">Predictions</a>
+                    <a href="#about" class="nav-link py-2">About</a>
+                </div>
+                <button class="md:hidden focus:outline-none">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg text-white py-20">
+        <div class="container mx-auto px-6 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">AI-Powered Stock Market Predictions</h1>
+            <p class="text-xl md:text-2xl mb-8">Advanced LSTM and XGBoost models analyzing real-time market data to forecast stock trends</p>
+            <div class="max-w-2xl mx-auto bg-white bg-opacity-10 rounded-lg p-6 backdrop-filter backdrop-blur-sm">
+                <div class="flex flex-col md:flex-row">
+                    <input type="text" placeholder="Enter stock symbol (e.g., AAPL, MSFT)" class="stock-input flex-grow px-4 py-3 mb-4 md:mb-0 md:mr-4 text-gray-800">
+                    <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300">Get Prediction</button>
+                </div>
+                <p class="mt-3 text-blue-100">Try: AAPL, MSFT, TSLA, AMZN, GOOGL</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Dashboard -->
+    <section id="predictions" class="py-16 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Real-Time Stock Predictions</h2>
+            
+            <!-- Stock Selector -->
+            <div class="flex flex-wrap justify-center mb-10">
+                <button class="m-2 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">AAPL</button>
+                <button class="m-2 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">MSFT</button>
+                <button class="m-2 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">TSLA</button>
+                <button class="m-2 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">AMZN</button>
+                <button class="m-2 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">GOOGL</button>
+                <button class="m-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition">+ More</button>
+            </div>
+            
+            <!-- Current Prediction -->
+            <div class="bg-gray-50 rounded-xl p-6 mb-10 shadow-sm">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+                    <div class="flex items-center mb-4 md:mb-0">
+                        <img src="https://logo.clearbit.com/apple.com" alt="Apple Logo" class="w-12 h-12 mr-4 rounded-full">
+                        <div>
+                            <h3 class="text-2xl font-bold">Apple Inc. (AAPL)</h3>
+                            <p class="text-gray-600">NASDAQ • Technology</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-3xl font-bold mr-4">$189.42</span>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">+2.34%</span>
+                    </div>
+                </div>
+                
+                <!-- Prediction Chart -->
+                <div class="h-96 w-full">
+                    <canvas id="stockChart"></canvas>
+                </div>
+                
+                <!-- Prediction Summary -->
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="prediction-card bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
+                        <h4 class="font-bold text-lg mb-2">Next Day Prediction</h4>
+                        <p class="text-2xl font-bold text-blue-600 mb-2">$191.25 <span class="text-green-500 text-sm">(+0.97%)</span></p>
+                        <p class="text-gray-600">LSTM model predicts upward movement with 82% confidence</p>
+                    </div>
+                    <div class="prediction-card bg-white p-6 rounded-lg shadow border-l-4 border-purple-500">
+                        <h4 class="font-bold text-lg mb-2">7-Day Forecast</h4>
+                        <p class="text-2xl font-bold text-purple-600 mb-2">$195.10 <span class="text-green-500 text-sm">(+3.00%)</span></p>
+                        <p class="text-gray-600">Hybrid model shows steady growth trend this week</p>
+                    </div>
+                    <div class="prediction-card bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
+                        <h4 class="font-bold text-lg mb-2">Market Sentiment</h4>
+                        <div class="flex items-center mb-2">
+                            <span class="text-green-500 mr-2"><i class="fas fa-thumbs-up"></i> 68%</span>
+                            <span class="text-red-500"><i class="fas fa-thumbs-down"></i> 32%</span>
+                        </div>
+                        <p class="text-gray-600">Positive sentiment from news and social media</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Technical Indicators -->
+            <div class="mt-12">
+                <h3 class="text-xl font-bold mb-6 text-gray-800">Technical Indicators</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white p-4 rounded-lg shadow text-center">
+                        <p class="text-gray-600 text-sm">RSI (14)</p>
+                        <p class="text-xl font-bold">62.4</p>
+                        <p class="text-sm text-gray-500">Neutral</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow text-center">
+                        <p class="text-gray-600 text-sm">MACD</p>
+                        <p class="text-xl font-bold">1.24</p>
+                        <p class="text-sm text-green-500">Bullish</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow text-center">
+                        <p class="text-gray-600 text-sm">SMA (50)</p>
+                        <p class="text-xl font-bold">$185.32</p>
+                        <p class="text-sm text-green-500">Above</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow text-center">
+                        <p class="text-gray-600 text-sm">Volume</p>
+                        <p class="text-xl font-bold">42.1M</p>
+                        <p class="text-sm text-green-500">High</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Model Comparison Section -->
+    <section id="models" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">AI Prediction Models</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- LSTM Card -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="gradient-bg p-6 text-white">
+                        <i class="fas fa-brain text-4xl mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">LSTM Network</h3>
+                        <p class="opacity-90">Long Short-Term Memory for sequential data analysis</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="mb-4">
+                            <span class="block text-gray-600 mb-1">Accuracy</span>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: 94%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600 mt-1">94.12%</span>
+                        </div>
+                        <div class="mb-4">
+                            <span class="block text-gray-600 mb-1">MAE</span>
+                            <span class="text-lg font-bold">1.9705</span>
+                        </div>
+                        <div class="mb-6">
+                            <span class="block text-gray-600 mb-1">RMSE</span>
+                            <span class="text-lg font-bold">2.8194</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>Excels at long-term dependencies</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>Captures temporal patterns</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-circle text-yellow-500 mt-1 mr-2"></i>
+                                <span>Requires more computational power</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- XGBoost Card -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="gradient-bg p-6 text-white">
+                        <i class="fas fa-tree text-4xl mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">XGBoost</h3>
+                        <p class="opacity-90">Extreme Gradient Boosting for feature analysis</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="mb-4">
+                            <span class="block text-gray-600 mb-1">Accuracy</span>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: 91%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600 mt-1">91.45%</span>
+                        </div>
+                        <div class="mb-4">
+                            <span class="block text-gray-600 mb-1">MAE</span>
+                            <span class="text-lg font-bold">2.1248</span>
+                        </div>
+                        <div class="mb-6">
+                            <span class="block text-gray-600 mb-1">RMSE</span>
+                            <span class="text-lg font-bold">3.0562</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>Handles feature interactions well</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>Faster training than LSTM</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-circle text-yellow-500 mt-1 mr-2"></i>
+                                <span>Less effective with pure time-series</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Hybrid Card -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="gradient-bg p-6 text-white">
+                        <i class="fas fa-project-diagram text-4xl mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">Hybrid Model</h3>
+                        <p class="opacity-90">Combining LSTM and XGBoost for optimal performance</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="mb-4">
+                            <span class="block text-gray-600 mb-1">Accuracy</span>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: 97%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600 mt-1">96.78%</span>
+                        </div>
+                        <div class="mb-4">
+                            <span class="block text-gray-600 mb-1">MAE</span>
+                            <span class="text-lg font-bold">1.6487</span>
+                        </div>
+                        <div class="mb-6">
+                            <span class="block text-gray-600 mb-1">RMSE</span>
+                            <span class="text-lg font-bold">2.1836</span>
+                        </div>
+                        <ul class="space-y-2 text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>Best overall performance</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>Combines temporal and feature analysis</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-circle text-yellow-500 mt-1 mr-2"></i>
+                                <span>More complex to implement</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Performance Chart -->
+            <div class="mt-16 bg-white p-6 rounded-xl shadow">
+                <h3 class="text-xl font-bold mb-6 text-gray-800">Model Performance Comparison</h3>
+                <div class="h-96 w-full">
+                    <canvas id="modelComparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-16 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">About the Project</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-bold mb-4 text-gray-800">AI-Driven Stock Price Prediction</h3>
+                    <p class="text-gray-700 mb-4">
+                        This project leverages advanced machine learning techniques to analyze historical stock market data and predict future price movements. 
+                        Our system combines the power of LSTM networks for time-series analysis with XGBoost for feature-based learning to deliver accurate forecasts.
+                    </p>
+                    <p class="text-gray-700 mb-6">
+                        The models are trained on comprehensive datasets including daily opening, closing, high, low prices, trading volume, and technical indicators 
+                        like RSI and MACD. This multi-faceted approach allows us to capture both short-term fluctuations and long-term trends in the market.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">LSTM</span>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">XGBoost</span>
+                        <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-semibold">Time Series</span>
+                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">Technical Indicators</span>
+                    </div>
+                </div>
+                <div class="bg-gray-100 rounded-xl overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" alt="Stock Market Analysis" class="w-full h-auto object-cover">
+                </div>
+            </div>
+            
+            <!-- Team Section -->
+            <div class="mt-16">
+                <h3 class="text-2xl font-bold mb-8 text-center text-gray-800">Project Team</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-gray-50 p-6 rounded-xl text-center">
+                        <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-user text-3xl text-blue-500"></i>
+                        </div>
+                        <h4 class="text-xl font-bold mb-1">Nivashini N</h4>
+                        <p class="text-gray-600 mb-3">Data Scientist</p>
+                        <p class="text-gray-700">Specialized in time series analysis and LSTM implementation</p>
+                    </div>
+                    <div class="bg-gray-50 p-6 rounded-xl text-center">
+                        <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-purple-100 flex items-center justify-center">
+                            <i class="fas fa-user text-3xl text-purple-500"></i>
+                        </div>
+                        <h4 class="text-xl font-bold mb-1">VARSHA RS</h4>
+                        <p class="text-gray-600 mb-3">ML Engineer</p>
+                        <p class="text-gray-700">Focused on XGBoost model development and optimization</p>
+                    </div>
+                    <div class="bg-gray-50 p-6 rounded-xl text-center">
+                        <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+                            <i class="fas fa-user text-3xl text-green-500"></i>
+                        </div>
+                        <h4 class="text-xl font-bold mb-1">UMMU HABIBA U</h4>
+                        <p class="text-gray-600 mb-3">Full Stack Developer</p>
+                        <p class="text-gray-700">Implemented the web interface and visualization tools</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="gradient-bg text-white py-12">
+            </div>
+            <div class="border-t border-blue-200 mt-8 pt-8 text-center text-blue-100">
+                <p>&copy; 2025 AI Stock Predictor.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Stock Chart
+        const stockCtx = document.getElementById('stockChart').getContext('2d');
+        const stockChart = new Chart(stockCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Today', 'Prediction'],
+                datasets: [
+                    {
+                        label: 'Actual Price',
+                        data: [182.34, 183.56, 185.22, 186.75, 188.90, 189.42, null],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Predicted Price',
+                        data: [null, null, null, null, null, 189.42, 191.25],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        tension: 0.3,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Price ($)'
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+
+        // Model Comparison Chart
+        const modelCtx = document.getElementById('modelComparisonChart').getContext('2d');
+        const modelChart = new Chart(modelCtx, {
+            type: 'bar',
+            data: {
+                labels: ['LSTM', 'XGBoost', 'Hybrid'],
+                datasets: [
+                    {
+                        label: 'Accuracy (%)',
+                        data: [94.12, 91.45, 96.78],
+                        backgroundColor: '#3b82f6',
+                        borderColor: '#2563eb',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'MAE',
+                        data: [1.9705, 2.1248, 1.6487],
+                        backgroundColor: '#10b981',
+                        borderColor: '#059669',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'RMSE',
+                        data: [2.8194, 3.0562, 2.1836],
+                        backgroundColor: '#8b5cf6',
+                        borderColor: '#7c3aed',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Model Performance Metrics'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Interactive stock selection
+        document.querySelectorAll('.stock-selector button').forEach(button => {
+            button.addEventListener('click', function() {
+                // In a real app, this would fetch new data for the selected stock
+                const stock = this.textContent;
+                document.querySelector('.stock-input').value = stock;
+                
+                // Update the stock display (simplified for demo)
+                const stockDisplay = document.querySelector('.current-stock');
+                stockDisplay.querySelector('h3').textContent = `${stock} Stock`;
+                stockDisplay.querySelector('img').src = `https://logo.clearbit.com/${stock.toLowerCase()}.com`;
+                
+                // Show loading state
+                const chartCanvas = document.getElementById('stockChart');
+                chartCanvas.style.opacity = '0.5';
+                
+                // Simulate data loading
+                setTimeout(() => {
+                    chartCanvas.style.opacity = '1';
+                    // In a real app, we would update the chart data here
+                }, 800);
+            });
+        });
+
+        // Search functionality
+        document.querySelector('.search-button').addEventListener('click', function() {
+            const stockSymbol = document.querySelector('.stock-input').value.trim().toUpperCase();
+            if (stockSymbol) {
+                // In a real app, this would fetch data for the entered symbol
+                alert(`Fetching data for ${stockSymbol}...`);
+            }
+        });
+    </script>
+</body>
+</html>
